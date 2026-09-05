@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ticket Confirmation</title>
+  <style>
+    body { font-family: Arial; background: #f8f8f8; text-align: center; margin-top: 50px; }
+    .ticket { background: white; display: inline-block; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
+    h2 { color: teal; }
+    p { font-size: 16px; }
+    a { background: teal; color: white; text-decoration: none; padding: 8px 20px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <div class="ticket">
+    <h2>🎟️ Ticket Confirmed!</h2>
+    <p><b>Ticket ID:</b> {{ ticket_id }}</p>
+    <p><b>Mode:</b> {{ mode|capitalize }}</p>
+    <p><b>Name:</b> {{ name }}</p>
+    <p><b>Route:</b> {{ from_city }} → {{ to_city }}</p>
+    <p><b>Seat Type:</b> {{ seat_type }}</p>
+    <p><b>Date:</b> {{ journey_date }}</p>
+    <p><b>Price:</b> ₹{{ price }}</p>
+    <br>
+    <a href="/dashboard">Back to Dashboard</a>
+  </div>
+</body>
+</html>

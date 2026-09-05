@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Available {{ mode|capitalize }}s</title>
+  <style>
+    body { font-family: Arial; background: #f2f2f2; text-align: center; margin: 40px; }
+    table { margin: auto; border-collapse: collapse; width: 90%; }
+    th, td { padding: 10px; border: 1px solid #ccc; }
+    th { background: teal; color: white; }
+    a, button { background: teal; color: white; padding: 5px 10px; text-decoration: none; border-radius: 5px; }
+    .msg { color: red; margin: 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h2>Available {{ mode|capitalize }}s</h2>
+
+  {% if msg %}
+    <p class="msg">{{ msg }}</p>
+  {% endif %}
+
+  {% if transports %}
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Day</th>
+        <th>Time</th>
+        <th>Price</th>
+        <th>Available</th>
+        <th>Book</th>
+      </tr>
+      {% for t in transports %}
+      <tr>
+        <td>{{ t.name }}</td>
+        <td>{{ t.from_city }}</td>
+        <td>{{ t.to_city }}</td>
+        <td>{{ t.day }}</td>
+        <td>{{ t.time }}</td>
+        <td>₹{{ t.base_price }}</td>
+        <td>{{ t.available_tickets }}</td>
+        <td>
+          <form method="GET" action="/confirm/{{ mode }}/{{ t[mode+'_id'] }}">
+            <input type="hidden" name="journey_date" value="{{ journey_date }}">
+            <button type="submit">Select</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>No {{ mode }}s available for the selected route.</p>
+  {% endif %}
+
+  <br>
+  <a href="/dashboard">Back to Dashboard</a>
+</body>
+</html>

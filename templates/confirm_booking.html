@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Confirm Booking | {{ mode|capitalize }}</title>
+  <style>
+    body { font-family: Arial; background: #f0f0f0; text-align: center; }
+    form { background: white; display: inline-block; padding: 20px; border-radius: 8px; margin-top: 40px; }
+    input, select { margin: 10px; padding: 8px; width: 220px; }
+    button { padding: 8px 20px; background: teal; color: white; border: none; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Confirm {{ mode|capitalize }} Booking</h2>
+  <p><b>{{ transport.name }}</b> | {{ transport.from_city }} → {{ transport.to_city }} | ₹{{ transport.base_price }}</p>
+
+  <form method="POST">
+    <input type="hidden" name="journey_date" value="{{ journey_date }}">
+    <input type="hidden" name="base_price" value="{{ base_price }}">
+
+    <input type="text" name="name" placeholder="Passenger Name" required><br>
+    <input type="number" name="age" placeholder="Age" required><br>
+    <select name="gender" required>
+      <option value="">Gender</option>
+      <option>Male</option>
+      <option>Female</option>
+      <option>Other</option>
+    </select><br>
+
+    <select name="seat_type" required>
+      <option value="">Select Seat Type</option>
+      {% for s in seat_types %}
+      <option>{{ s }}</option>
+      {% endfor %}
+    </select><br>
+
+    <button type="submit">Confirm Booking</button>
+  </form>
+  <br>
+  <a href="/dashboard">Back to Dashboard</a>
+</body>
+</html>

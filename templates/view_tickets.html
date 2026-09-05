@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Tickets</title>
+  <style>
+    body { font-family: Arial; background: #f2f2f2; text-align: center; margin-top: 50px; }
+    table { margin: auto; border-collapse: collapse; width: 90%; }
+    th, td { padding: 10px; border: 1px solid #ccc; }
+    th { background: teal; color: white; }
+    a { display: inline-block; margin-top: 20px; background: teal; color: white; padding: 8px 20px; text-decoration: none; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h2>Your Booked Tickets</h2>
+
+  {% if tickets %}
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Mode</th>
+        <th>Name</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Date</th>
+        <th>Seat Type</th>
+        <th>Price</th>
+      </tr>
+      {% for t in tickets %}
+      <tr>
+        <td>{{ t.ticket_id }}</td>
+        <td>{{ t.mode|capitalize }}</td>
+        <td>{{ t.name }}</td>
+        <td>{{ t.from_city }}</td>
+        <td>{{ t.to_city }}</td>
+        <td>{{ t.journey_date }}</td>
+        <td>{{ t.seat_type }}</td>
+        <td>₹{{ t.price }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  {% else %}
+    <p>No tickets booked yet.</p>
+  {% endif %}
+
+  <a href="/dashboard">Back to Dashboard</a>
+</body>
+</html>
