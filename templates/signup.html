@@ -1,21 +1,43 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Sign Up | Transport Booking</title>
-  <style>
-    body { font-family: Arial; background: #f0f0f0; text-align: center; }
-    form { background: white; display: inline-block; padding: 20px; margin-top: 80px; border-radius: 8px; }
-    input { margin: 8px; padding: 8px; width: 200px; }
-    button { padding: 8px 20px; background: teal; color: white; border: none; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <h2>Create an Account</h2>
-  <form method="POST">
-    <input type="text" name="username" placeholder="Username" required><br>
-    <input type="password" name="password" placeholder="Password" required><br>
-    <button type="submit">Sign Up</button><br>
-    <p>Already have an account? <a href="/login">Login</a></p>
-  </form>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Sign Up | Transport Booking{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5 col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-header-teal text-center">
+        <h3 class="mb-0"><i class="bi bi-person-plus me-2"></i>Create Account</h3>
+      </div>
+      <div class="card-body p-4">
+        <form method="POST" data-loading="Creating account..." novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="Choose a username" required minlength="3" maxlength="50" autocomplete="username">
+            <div class="form-text">3-50 characters</div>
+            <div class="invalid-feedback">Username must be 3-50 characters.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Create a password" required minlength="8" autocomplete="new-password">
+            <div class="form-text">At least 8 characters</div>
+            <div class="invalid-feedback">Password must be at least 8 characters.</div>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-teal btn-lg">
+              <i class="bi bi-person-plus me-2"></i>Create Account
+            </button>
+          </div>
+        </form>
+
+        <div class="text-center mt-3">
+          <p class="mb-0">Already have an account? <a href="{{ url_for('login') }}" class="text-teal fw-medium">Login</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

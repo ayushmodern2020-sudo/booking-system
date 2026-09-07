@@ -1,21 +1,41 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Login | Transport Booking</title>
-  <style>
-    body { font-family: Arial; background: #f0f0f0; text-align: center; }
-    form { background: white; display: inline-block; padding: 20px; margin-top: 80px; border-radius: 8px; }
-    input { margin: 8px; padding: 8px; width: 200px; }
-    button { padding: 8px 20px; background: teal; color: white; border: none; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <h2>Login to Transport Booking</h2>
-  <form method="POST">
-    <input type="text" name="username" placeholder="Username" required><br>
-    <input type="password" name="password" placeholder="Password" required><br>
-    <button type="submit">Login</button><br>
-    <p>Don't have an account? <a href="/signup">Sign Up</a></p>
-  </form>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Login | Transport Booking{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-5 col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-header-teal text-center">
+        <h3 class="mb-0"><i class="bi bi-box-arrow-in-right me-2"></i>Login</h3>
+      </div>
+      <div class="card-body p-4">
+        <form method="POST" data-loading="Signing in..." novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required autofocus autocomplete="username">
+            <div class="invalid-feedback">Please enter your username.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+            <div class="invalid-feedback">Please enter your password.</div>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-teal btn-lg">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Login
+            </button>
+          </div>
+        </form>
+
+        <div class="text-center mt-3">
+          <p class="mb-0">Don't have an account? <a href="{{ url_for('signup') }}" class="text-teal fw-medium">Sign Up</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,41 +1,127 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Confirm Booking | {{ mode|capitalize }}</title>
-  <style>
-    body { font-family: Arial; background: #f0f0f0; text-align: center; }
-    form { background: white; display: inline-block; padding: 20px; border-radius: 8px; margin-top: 40px; }
-    input, select { margin: 10px; padding: 8px; width: 220px; }
-    button { padding: 8px 20px; background: teal; color: white; border: none; cursor: pointer; }
-  </style>
-</head>
-<body>
-  <h2>Confirm {{ mode|capitalize }} Booking</h2>
-  <p><b>{{ transport.name }}</b> | {{ transport.from_city }} → {{ transport.to_city }} | ₹{{ transport.base_price }}</p>
+{% extends "base.html" %}
+{% block title %}Confirm {{ mode|capitalize }} Booking | Transport Booking{% endblock %}
 
-  <form method="POST">
-    <input type="hidden" name="journey_date" value="{{ journey_date }}">
-    <input type="hidden" name="base_price" value="{{ base_price }}">
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-7">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <h2><i class="bi bi-{{ 'airplane' if mode=='flight' else 'train-front' if mode=='train' else 'bus-front' }} me-2 text-teal"></i>Confirm {{ mode|capitalize }} Booking</h2>
+      <a href="{{ url_for('book_home') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+      </a>
+    </div>
 
-    <input type="text" name="name" placeholder="Passenger Name" required><br>
-    <input type="number" name="age" placeholder="Age" required><br>
-    <select name="gender" required>
-      <option value="">Gender</option>
-      <option>Male</option>
-      <option>Female</option>
-      <option>Other</option>
-    </select><br>
+    <!-- Transport Summary Card -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="bg-teal bg-opacity-10 text-teal rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+            <i class="bi bi-{{ 'airplane' if mode=='flight' else 'train-front' if mode=='train' else 'bus-front' }} fs-3"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h5 class="mb-1">{{ transport.name }}</h5>
+            <div class="d-flex align-items-center text-muted small">
+              <i class="bi bi-geo-alt me-1"></i>
+              <span>{{ transport.from_city }}</span>
+              <i class="bi bi-arrow-right mx-2"></i>
+              <span>{{ transport.to_city }}</span>
+              <span class="ms-3">{{ transport.day }} • {{ transport.time }}</span>
+            </div>
+          </div>
+          <div class="text-end">
+            <div class="fw-bold text-teal fs-4">₹{{ transport.base_price }}</div>
+            <small class="text-muted">Base Price</small>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <select name="seat_type" required>
-      <option value="">Select Seat Type</option>
-      {% for s in seat_types %}
-      <option>{{ s }}</option>
-      {% endfor %}
-    </select><br>
+    <!-- Booking Form -->
+    <div class="card shadow-sm border-0">
+      <div class="card-header-teal">
+        <h5 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Passenger Details</h5>
+      </div>
+      <div class="card-body p-4">
+        <form method="POST" data-loading="Confirming booking..." novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="journey_date" value="{{ journey_date }}">
+          <input type="hidden" name="base_price" value="{{ base_price }}">
 
-    <button type="submit">Confirm Booking</button>
-  </form>
-  <br>
-  <a href="/dashboard">Back to Dashboard</a>
-</body>
-</html>
+          <div class="row g-3">
+            <div class="col-12">
+              <label for="name" class="form-label">Passenger Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="name" name="name" placeholder="Full name as per ID proof" required maxlength="100">
+              <div class="invalid-feedback">Please enter passenger name.</div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="age" class="form-label">Age <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="age" name="age" placeholder="Age" required min="1" max="120">
+              <div class="invalid-feedback">Age must be between 1 and 120.</div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+              <select class="form-select" id="gender" name="gender" required>
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+              <div class="invalid-feedback">Please select gender.</div>
+            </div>
+
+            <div class="col-12">
+              <label for="seat_type" class="form-label">Seat Type <span class="text-danger">*</span></label>
+              <select class="form-select" id="seat_type" name="seat_type" required>
+                <option value="">Select seat type</option>
+                {% for s in seat_types %}
+                <option value="{{ s }}">{{ s }} {% if s in SEAT_TYPE_MULTIPLIERS %}({{ (SEAT_TYPE_MULTIPLIERS[s] * base_price)|round(0) }}×) {% endif %}</option>
+                {% endfor %}
+              </select>
+              <div class="invalid-feedback">Please select a seat type.</div>
+              <div class="form-text">Multipliers applied to base price: {% for s in seat_types %}{{ s }}: {{ SEAT_TYPE_MULTIPLIERS[s] }}x{% if not loop.last %}, {% endif %}{% endfor %}</div>
+            </div>
+          </div>
+
+          <div class="mt-4 p-3 bg-light rounded">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <small class="text-muted">Estimated Total</small>
+                <div class="fw-bold fs-4 text-teal" id="estimatedPrice">₹{{ base_price }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-teal btn-lg">
+              <i class="bi bi-check-circle me-2"></i>Confirm Booking
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var basePrice = {{ base_price }};
+  var multipliers = {{ SEAT_TYPE_MULTIPLIERS | tojson }};
+  var priceEl = document.getElementById('estimatedPrice');
+  var seatSelect = document.getElementById('seat_type');
+
+  function updatePrice() {
+    var seatType = seatSelect.value;
+    var multiplier = multipliers[seatType] || 1.0;
+    var total = basePrice * multiplier;
+    priceEl.textContent = '₹' + total.toFixed(2);
+  }
+
+  seatSelect.addEventListener('change', updatePrice);
+  updatePrice();
+});
+</script>
+{% endblock %}

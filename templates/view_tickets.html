@@ -1,47 +1,177 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>My Tickets</title>
-  <style>
-    body { font-family: Arial; background: #f2f2f2; text-align: center; margin-top: 50px; }
-    table { margin: auto; border-collapse: collapse; width: 90%; }
-    th, td { padding: 10px; border: 1px solid #ccc; }
-    th { background: teal; color: white; }
-    a { display: inline-block; margin-top: 20px; background: teal; color: white; padding: 8px 20px; text-decoration: none; border-radius: 5px; }
-  </style>
-</head>
-<body>
-  <h2>Your Booked Tickets</h2>
+{% extends "base.html" %}
+{% block title %}My Tickets | Transport Booking{% endblock %}
 
-  {% if tickets %}
-    <table>
-      <tr>
-        <th>ID</th>
-        <th>Mode</th>
-        <th>Name</th>
-        <th>From</th>
-        <th>To</th>
-        <th>Date</th>
-        <th>Seat Type</th>
-        <th>Price</th>
-      </tr>
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-11">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <h2><i class="bi bi-list-check me-2 text-teal"></i>My Booked Tickets</h2>
+      <a href="{{ url_for('book_home') }}" class="btn btn-teal">
+        <i class="bi bi-plus-circle me-1"></i>Book New Ticket
+      </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body">
+        <form method="GET" id="filterForm" class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label for="filterMode" class="form-label">Transport Mode</label>
+            <select class="form-select" id="filterMode" name="mode">
+              <option value="">All Modes</option>
+              <option value="flight" {% if request.args.get('mode') == 'flight' %}selected{% endif %}>Flights</option>
+              <option value="train" {% if request.args.get('mode') == 'train' %}selected{% endif %}>Trains</option>
+              <option value="bus" {% if request.args.get('mode') == 'bus' %}selected{% endif %}>Buses</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="filterStatus" class="form-label">Status</label>
+            <select class="form-select" id="filterStatus" name="status">
+              <option value="">All Status</option>
+              <option value="active" {% if request.args.get('status') == 'active' %}selected{% endif %}>Active</option>
+              <option value="cancelled" {% if request.args.get('status') == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label for="filterDateFrom" class="form-label">From Date</label>
+            <input type="date" class="form-control" id="filterDateFrom" name="date_from" value="{{ request.args.get('date_from', '') }}">
+          </div>
+          <div class="col-md-3">
+            <label for="filterDateTo" class="form-label">To Date</label>
+            <input type="date" class="form-control" id="filterDateTo" name="date_to" value="{{ request.args.get('date_to', '') }}">
+          </div>
+          <div class="col-12">
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-teal">
+                <i class="bi bi-funnel me-1"></i>Apply Filters
+              </button>
+              <a href="{{ url_for('view_tickets') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i>Clear
+              </a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tickets Table (Desktop) -->
+    {% if tickets %}
+    <div class="d-none d-lg-block">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th style="width: 50px;">#</th>
+                  <th>Ticket ID</th>
+                  <th>Mode</th>
+                  <th>Passenger</th>
+                  <th>Route</th>
+                  <th>Date</th>
+                  <th>Seat Type</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th style="width: 120px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for t in tickets %}
+                <tr class="{% if t.status == 'cancelled' %}table-secondary{% endif %}">
+                  <td>{{ loop.index }}</td>
+                  <td class="font-monospace fw-medium">{{ t.ticket_id }}</td>
+                  <td>
+                    <span class="badge bg-{{ 'primary' if t.mode=='flight' else 'success' if t.mode=='train' else 'warning' }}">{{ t.mode|capitalize }}</span>
+                  </td>
+                  <td>{{ t.name }}</td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <i class="bi bi-geo-alt-fill text-teal me-2"></i>
+                      <div>
+                        <div class="fw-medium">{{ t.from_city }}</div>
+                        <small class="text-muted">{{ t.to_city }}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{{ t.journey_date }}</td>
+                  <td>{{ t.seat_type }}</td>
+                  <td class="fw-medium text-teal">₹{{ t.price }}</td>
+                  <td>
+                    {% if t.status == 'active' %}
+                    <span class="badge bg-success">Active</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Cancelled</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if t.status == 'active' %}
+                    <form method="POST" action="{{ url_for('cancel_ticket', ticket_id=t.ticket_id) }}" class="d-inline" onsubmit="return confirm('Cancel this ticket? Seat will be restored.');">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn btn-outline-danger btn-sm" data-loading="Cancelling...">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                      </button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted small">—</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Card View -->
+    <div class="d-lg-none">
       {% for t in tickets %}
-      <tr>
-        <td>{{ t.ticket_id }}</td>
-        <td>{{ t.mode|capitalize }}</td>
-        <td>{{ t.name }}</td>
-        <td>{{ t.from_city }}</td>
-        <td>{{ t.to_city }}</td>
-        <td>{{ t.journey_date }}</td>
-        <td>{{ t.seat_type }}</td>
-        <td>₹{{ t.price }}</td>
-      </tr>
+      <div class="card card-mobile-stack shadow-sm border-0 {% if t.status == 'cancelled' %}opacity-50{% endif %}">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div>
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-{{ 'primary' if t.mode=='flight' else 'success' if t.mode=='train' else 'warning' }}">{{ t.mode|capitalize }}</span>
+                <span class="font-monospace small">{{ t.ticket_id }}</span>
+              </div>
+            </div>
+            <span class="badge {% if t.status == 'active' %}bg-success{% else %}bg-secondary{% endif %}">
+              {{ t.status|capitalize }}
+            </span>
+          </div>
+          <div class="mb-2">
+            <div class="fw-medium">{{ t.name }}</div>
+            <div class="text-muted small">{{ t.seat_type }} • ₹{{ t.price }}</div>
+          </div>
+          <div class="d-flex align-items-center text-muted small mb-2">
+            <i class="bi bi-geo-alt-fill text-teal me-2"></i>
+            <span>{{ t.from_city }} → {{ t.to_city }}</span>
+            <span class="ms-3">{{ t.journey_date }}</span>
+          </div>
+          {% if t.status == 'active' %}
+          <form method="POST" action="{{ url_for('cancel_ticket', ticket_id=t.ticket_id) }}" class="d-inline" onsubmit="return confirm('Cancel this ticket? Seat will be restored.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-danger btn-sm" data-loading="Cancelling...">
+              <i class="bi bi-x-circle me-1"></i>Cancel Ticket
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
       {% endfor %}
-    </table>
-  {% else %}
-    <p>No tickets booked yet.</p>
-  {% endif %}
+    </div>
 
-  <a href="/dashboard">Back to Dashboard</a>
-</body>
-</html>
+    {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-ticket-perforated display-1 text-muted"></i>
+      <h4 class="mt-3">No Tickets Found</h4>
+      <p class="text-muted">{% if request.args.get('mode') or request.args.get('status') or request.args.get('date_from') or request.args.get('date_to') %}No tickets match your filters.{% else %}You haven't booked any tickets yet.{% endif %}</p>
+      <a href="{{ url_for('book_home') }}" class="btn btn-teal mt-2">
+        <i class="bi bi-plus-circle me-1"></i>Book Your First Ticket
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

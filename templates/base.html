@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Transport Booking{% endblock %}</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <style>
+    :root {
+      --primary-teal: #0d9488;
+      --primary-teal-dark: #0f766e;
+      --primary-teal-light: #14b8a6;
+    }
+    .btn-teal { background-color: var(--primary-teal); border-color: var(--primary-teal); color: white; }
+    .btn-teal:hover { background-color: var(--primary-teal-dark); border-color: var(--primary-teal-dark); }
+    .btn-outline-teal { color: var(--primary-teal); border-color: var(--primary-teal); }
+    .btn-outline-teal:hover { background-color: var(--primary-teal); color: white; }
+    .text-teal { color: var(--primary-teal) !important; }
+    .bg-teal { background-color: var(--primary-teal) !important; }
+    .border-teal { border-color: var(--primary-teal) !important; }
+    .table th { background-color: var(--primary-teal); color: white; }
+    .navbar-teal { background-color: var(--primary-teal) !important; }
+    .card-header-teal { background-color: var(--primary-teal); color: white; }
+    .loading-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(255,255,255,0.8); z-index: 9999; display: none;
+      justify-content: center; align-items: center;
+    }
+    .loading-overlay.active { display: flex; }
+    .toast-container { z-index: 1080; }
+    @media (max-width: 767.98px) {
+      .table-responsive-stack { display: block; width: 100%; overflow-x: auto; }
+      .table-responsive-stack table { min-width: 600px; }
+      .card-mobile-stack { margin-bottom: 1rem; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="text-center">
+      <div class="spinner-border text-teal" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2 text-muted">{% block loading_text %}Processing...{% endblock %}</p>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark navbar-teal shadow-sm">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="{{ url_for('dashboard') if session.get('user_id') else url_for('login') }}">
+        <i class="bi bi-bus-front me-2"></i>Transport Booking
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        {% if session.get('user_id') %}
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('book_home') }}"><i class="bi bi-ticket-perforated me-1"></i>Book Tickets</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('view_tickets') }}"><i class="bi bi-list-check me-1"></i>My Tickets</a>
+          </li>
+        </ul>
+        <div class="navbar-nav ms-auto">
+          <span class="nav-link px-3">
+            <i class="bi bi-person-circle me-1"></i>{{ session.get('username', 'User') }}
+          </span>
+          <a class="nav-link" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container my-4" id="mainContent">
+    <!-- Flash Messages as Toasts -->
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          <div class="toast align-items-center text-white bg-{{ 'success' if category=='success' else 'danger' if category=='error' else 'warning' if category=='warning' else 'info' }} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+              <div class="toast-body d-flex align-items-center">
+                <i class="bi bi-{{ 'check-circle-fill' if category=='success' else 'exclamation-triangle-fill' if category in ['error','warning'] else 'info-circle-fill' }} me-2"></i>
+                {{ message }}
+              </div>
+              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer mt-auto py-3 bg-light border-top">
+    <div class="container text-center text-muted small">
+      <p class="mb-0">&copy; {{ current_year }} Transport Booking Portal. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+  <!-- Common JavaScript -->
+  <script>
+    // Initialize all toasts
+    document.addEventListener('DOMContentLoaded', function() {
+      var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+      toastElList.forEach(function(toastEl) {
+        new bootstrap.Toast(toastEl, { delay: 4000, autohide: true }).show();
+      });
+
+      // Add loading state to forms
+      document.querySelectorAll('form[data-loading]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+          // Don't show loading for forms with validation errors
+          if (form.checkValidity()) {
+            showLoading(form.dataset.loadingText || 'Processing...');
+          }
+        });
+      });
+
+      // Auto-hide loading on page load (in case of redirect)
+      hideLoading();
+    });
+
+    function showLoading(text) {
+      var overlay = document.getElementById('loadingOverlay');
+      var loadingText = overlay.querySelector('p');
+      if (text) loadingText.textContent = text;
+      overlay.classList.add('active');
+    }
+
+    function hideLoading() {
+      var overlay = document.getElementById('loadingOverlay');
+      overlay.classList.remove('active');
+    }
+
+    // Confirm action helper
+    function confirmAction(message, callback) {
+      if (confirm(message)) {
+        callback();
+      }
+    }
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

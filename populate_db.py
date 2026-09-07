@@ -2,15 +2,20 @@
 #  POPULATE TRANSPORT DATABASE SCRIPT
 # ===============================================================
 
-import mysql.connector
+import os
 import random
+import mysql.connector
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # ---------- CONNECT TO DATABASE ----------
 con = mysql.connector.connect(
-    host="localhost",
-    user="root",           # 🔹 change this if your MySQL username is different
-    password="1507",  # 🔹 change this to your actual MySQL password
-    database="transport_db"
+    host=os.getenv('DB_HOST', 'localhost'),
+    user=os.getenv('DB_USER', 'root'),
+    password=os.getenv('DB_PASSWORD', ''),
+    database=os.getenv('DB_NAME', 'transport_db')
 )
 
 cur = con.cursor()
@@ -26,7 +31,7 @@ cur.execute("DELETE FROM trains")
 cur.execute("DELETE FROM buses")
 
 # ---------- FLIGHTS ----------
-for i in range(3000):  # creates 300 random flight records
+for i in range(300):  # creates 300 random flight records
     from_city, to_city = random.sample(cities, 2)
     name = f"AirIndia {random.randint(100, 999)}"
     day = random.choice(days)
@@ -41,7 +46,7 @@ for i in range(3000):  # creates 300 random flight records
 print("✅ Inserted 300 flights")
 
 # ---------- TRAINS ----------
-for i in range(2500):  # creates 250 train records
+for i in range(250):  # creates 250 train records
     from_city, to_city = random.sample(cities, 2)
     name = f"Express {random.randint(10000, 99999)}"
     day = random.choice(days)
@@ -56,7 +61,7 @@ for i in range(2500):  # creates 250 train records
 print("✅ Inserted 250 trains")
 
 # ---------- BUSES ----------
-for i in range(2000):  # creates 200 bus records
+for i in range(200):  # creates 200 bus records
     from_city, to_city = random.sample(cities, 2)
     name = f"RedBus {random.randint(1000, 9999)}"
     day = random.choice(days)
